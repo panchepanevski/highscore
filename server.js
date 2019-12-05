@@ -1,26 +1,28 @@
-const MongoClient = require("mongodb").MongoClient;
-const assert = require("assert");
+require("dotenv").config();
+const express = require("express");
+const { initDb } = require("./lib/database");
+const router = require("./lib/router");
 
 // Connection URL
-const url = "mongodb://localhost:27017";
-
+const url = process.env.MONGO_URL;
 // Database Name
-const dbName = "intro";
+const dbName = "highscore";
 
-// Create a new MongoClient
-const client = new MongoClient(url);
+const app = express();
+const port = 8081;
 
-// Use connect method to connect to the Server
+app.use(express.json());
 
-async function initDb() {
-  await client.connect();
-  console.log("Connected successfully to server");
-  const db = client.db(dbName);
+app.get("/", async (request, response) => {
+  response.send("Hallo Panche");
+});
 
-  const cursor = db.collection("users").find();
-  const users = await cursor.toArray();
-  console.log(users);
-  client.close();
-}
+app.use("/api", router);
 
-initDb();
+initDb(url, dbName).then(() => {
+  console.log("Database initialized");
+
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+});
